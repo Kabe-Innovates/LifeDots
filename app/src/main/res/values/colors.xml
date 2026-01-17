@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light Theme -->
+    <color name="light_background">#F5F5F5</color>
+    <color name="light_dot_filled">#2C2C2C</color>
+    <color name="light_dot_empty">#D0D0D0</color>
+    <color name="light_dot_today">#4A90D9</color>
+
+    <!-- Dark Theme -->
+    <color name="dark_background">#1A1A1A</color>
+    <color name="dark_dot_filled">#E0E0E0</color>
+    <color name="dark_dot_empty">#3A3A3A</color>
+    <color name="dark_dot_today">#5BA0E9</color>
+
+    <!-- AMOLED Theme -->
+    <color name="amoled_background">#000000</color>
+    <color name="amoled_dot_filled">#FFFFFF</color>
+    <color name="amoled_dot_empty">#2A2A2A</color>
+    <color name="amoled_dot_today">#6AB0F9</color>
+
+    <!-- App UI Colors -->
+    <color name="primary">#2C2C2C</color>
+    <color name="primary_variant">#1A1A1A</color>
+    <color name="secondary">#4A90D9</color>
+    <color name="background">#F5F5F5</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_background">#2C2C2C</color>
+    <color name="on_surface">#2C2C2C</color>
+</resources>

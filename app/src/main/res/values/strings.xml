@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LifeDots</string>
+    <string name="wallpaper_description">A minimal live wallpaper that visualizes the passing of time with 365 dots</string>
+    <string name="settings_title">LifeDots Settings</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">LifeDots</string>
+    <string name="onboarding_subtitle">See time pass, one dot at a time</string>
+    <string name="onboarding_description">365 dots. One fills each day. A quiet reminder that time is moving forward.</string>
+    <string name="set_wallpaper">Set as Wallpaper</string>
+    <string name="open_settings">Customize</string>
+
+    <!-- Settings -->
+    <string name="theme_section">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_amoled">AMOLED</string>
+
+    <string name="dot_size_section">Dot Size</string>
+    <string name="dot_size_small">Small</string>
+    <string name="dot_size_medium">Medium</string>
+    <string name="dot_size_large">Large</string>
+
+    <string name="grid_density_section">Grid Density</string>
+    <string name="grid_compact">Compact</string>
+    <string name="grid_relaxed">Relaxed</string>
+
+    <string name="highlight_today">Highlight Today</string>
+    <string name="highlight_today_desc">Show a distinct marker for today\'s dot</string>
+
+    <!-- Info -->
+    <string name="days_passed">%1$d days passed</string>
+    <string name="days_remaining">%1$d days remaining</string>
+</resources>
