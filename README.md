@@ -13,9 +13,7 @@
     <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin"/></a>                                                                                       
     <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Jetpack%20Compose-UI-4285F4?logo=jetpackcompose&logoColor=white" alt="Compose"/></a>                                             
     <img src="https://img.shields.io/badge/Min%20SDK-26-brightgreen" alt="Min SDK"/>      
-    <!--
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"/></a>         
-    -->
   </p>                                                                                                                                                                                                                              
                                                                                                                                                                                                                                     
   <p align="center">                                                                                                                                                                                                                
