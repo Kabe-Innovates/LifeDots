@@ -8,14 +8,14 @@
   </p>         
   -->
                                                                                                                                                                                                                                     
-  <p align="center">                                                                                                                                                                                                                
-    <a href="https://android.com"><img src="https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white" alt="Platform"/></a>                                                                                 
-    <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin"/></a>                                                                                       
-    <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Jetpack%20Compose-UI-4285F4?logo=jetpackcompose&logoColor=white" alt="Compose"/></a>                                             
-    <img src="https://img.shields.io/badge/Min%20SDK-26-brightgreen" alt="Min SDK"/>      
-    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"/></a>         
-   <a href="https://www.producthunt.com/products/lifedots-2?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-lifedots-2" target="_blank" rel="noopener noreferrer"><img alt="LifeDots - A Live life calendar that lives straight on your Lockscreen. | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1071533&amp;theme=neutral&amp;t=1770025298795"></a>
-  </p>                                                                                                                                                                                                                              
+  <p align="center">
+    <a href="https://android.com"><img src="https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white" alt="Platform" height="20"/></a>
+    <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin" height="20"/></a>
+    <a href="https://developer.android.com/jetpack/compose"><img src="https://img.shields.io/badge/Jetpack%20Compose-UI-4285F4?logo=jetpackcompose&logoColor=white" alt="Compose" height="20"/></a>
+    <img src="https://img.shields.io/badge/Min%20SDK-26-brightgreen" alt="Min SDK" height="20"/>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License" height="20"/></a>
+    <a href="https://www.producthunt.com/products/lifedots-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-lifedots-2" target="_blank" rel="noopener noreferrer"><img alt="LifeDots - A Live life calendar that lives straight on your Lockscreen. | Product Hunt" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1071533&theme=neutral&t=1770025298795" height="20"/></a>
+</p>                                                                                                                                                                                                                    
                                                                                                                                                                                                                                     
   <p align="center">                                                                                                                                                                                                                
     <a href="#features">Features</a> •                                                                                                                                                                                                                                                                                                                                                                                     
