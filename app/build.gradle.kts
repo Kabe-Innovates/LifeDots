@@ -52,6 +52,12 @@ dependencies {
     // Gson for JSON serialization (goals feature)
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // GitHub contribution feature
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.jsoup:jsoup:1.17.2")
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

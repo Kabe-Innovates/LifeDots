@@ -85,6 +85,12 @@ import com.example.lifedots.ui.components.ColorButton
 import com.example.lifedots.ui.components.ColorPickerDialog
 import com.example.lifedots.ui.components.GoalEditorDialog
 import com.example.lifedots.ui.theme.LifeDotsTheme
+import com.example.lifedots.github.GitHubContributionClient
+import com.example.lifedots.github.GitHubSyncWorker
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -131,6 +137,27 @@ fun SettingsScreen(
     var showTreeTrunkColorPicker by remember { mutableStateOf(false) }
     var showTreeLeafColorPicker by remember { mutableStateOf(false) }
     var showTreeBloomColorPicker by remember { mutableStateOf(false) }
+
+    // GitHub state
+    val coroutineScope = rememberCoroutineScope()
+    var gitHubUsername by remember { mutableStateOf(settings.gitHubSettings.username) }
+    var gitHubConnecting by remember { mutableStateOf(false) }
+    var gitHubStatus by remember { mutableStateOf<String?>(null) }
+    var gitHubError by remember { mutableStateOf(false) }
+
+    // Load cached GitHub status on first composition
+    val gitHubClient = remember { GitHubContributionClient(context) }
+    val cachedGitHubData = remember { gitHubClient.getCachedData() }
+    if (gitHubStatus == null && cachedGitHubData != null && settings.gitHubSettings.enabled) {
+        val dateFormat = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
+        gitHubStatus = context.getString(
+            R.string.github_connected,
+            cachedGitHubData.totalContributions
+        ) + "\n" + context.getString(
+            R.string.github_last_updated,
+            dateFormat.format(Date(cachedGitHubData.lastFetched))
+        )
+    }
 
     // Permission state for image picker
     var hasImagePermission by remember {
@@ -261,6 +288,166 @@ fun SettingsScreen(
                             label = "Today's Dot",
                             onClick = { showTodayColorPicker = true }
                         )
+                    }
+                }
+
+                // GitHub Contributions sub-section
+                Spacer(modifier = Modifier.height(16.dp))
+                SettingsSection(title = stringResource(R.string.github_section)) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 2.dp
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            // Enable toggle
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(R.string.github_enable),
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.github_enable_desc),
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                }
+                                Switch(
+                                    checked = settings.gitHubSettings.enabled,
+                                    onCheckedChange = { enabled ->
+                                        preferences.setGitHubEnabled(enabled)
+                                        if (!enabled) {
+                                            gitHubStatus = null
+                                            gitHubError = false
+                                            GitHubSyncWorker.cancel(context)
+                                        }
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                        checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                    )
+                                )
+                            }
+
+                            // Username + Connect (visible when enabled)
+                            AnimatedVisibility(
+                                visible = settings.gitHubSettings.enabled,
+                                enter = expandVertically(),
+                                exit = shrinkVertically()
+                            ) {
+                                Column {
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    OutlinedTextField(
+                                        value = gitHubUsername,
+                                        onValueChange = { gitHubUsername = it },
+                                        label = { Text(stringResource(R.string.github_username)) },
+                                        placeholder = { Text(stringResource(R.string.github_username_hint)) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        singleLine = true
+                                    )
+
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    // Connect / Disconnect button
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Button(
+                                            onClick = {
+                                                if (gitHubUsername.isNotBlank()) {
+                                                    gitHubConnecting = true
+                                                    gitHubError = false
+                                                    gitHubStatus = null
+                                                    coroutineScope.launch {
+                                                        val result = gitHubClient.fetchContributions(gitHubUsername.trim())
+                                                        gitHubConnecting = false
+                                                        result.fold(
+                                                            onSuccess = { data ->
+                                                                preferences.setGitHubUsername(gitHubUsername.trim())
+                                                                gitHubError = false
+                                                                val dateFormat = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
+                                                                gitHubStatus = context.getString(
+                                                                    R.string.github_connected,
+                                                                    data.totalContributions
+                                                                ) + "\n" + context.getString(
+                                                                    R.string.github_last_updated,
+                                                                    dateFormat.format(Date(data.lastFetched))
+                                                                )
+                                                                // Schedule background sync
+                                                                GitHubSyncWorker.schedule(
+                                                                    context,
+                                                                    settings.gitHubSettings.refreshIntervalHours
+                                                                )
+                                                            },
+                                                            onFailure = {
+                                                                gitHubError = true
+                                                                gitHubStatus = context.getString(R.string.github_error)
+                                                            }
+                                                        )
+                                                    }
+                                                }
+                                            },
+                                            enabled = !gitHubConnecting && gitHubUsername.isNotBlank(),
+                                            modifier = Modifier.weight(1f),
+                                            shape = RoundedCornerShape(12.dp)
+                                        ) {
+                                            if (gitHubConnecting) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(18.dp),
+                                                    strokeWidth = 2.dp,
+                                                    color = MaterialTheme.colorScheme.onPrimary
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(stringResource(R.string.github_connecting))
+                                            } else {
+                                                Text(stringResource(R.string.github_connect))
+                                            }
+                                        }
+
+                                        if (settings.gitHubSettings.username.isNotBlank()) {
+                                            OutlinedButton(
+                                                onClick = {
+                                                    preferences.setGitHubUsername("")
+                                                    preferences.setGitHubEnabled(false)
+                                                    gitHubUsername = ""
+                                                    gitHubStatus = null
+                                                    gitHubError = false
+                                                    gitHubClient.clearCache()
+                                                    GitHubSyncWorker.cancel(context)
+                                                },
+                                                shape = RoundedCornerShape(12.dp)
+                                            ) {
+                                                Text(stringResource(R.string.github_disconnect))
+                                            }
+                                        }
+                                    }
+
+                                    // Status text
+                                    if (gitHubStatus != null) {
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Text(
+                                            text = gitHubStatus!!,
+                                            fontSize = 13.sp,
+                                            color = if (gitHubError)
+                                                MaterialTheme.colorScheme.error
+                                            else
+                                                Color(0xFF40C463), // GitHub green
+                                            lineHeight = 18.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

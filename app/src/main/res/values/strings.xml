@@ -29,6 +29,19 @@
     <string name="highlight_today">Highlight Today</string>
     <string name="highlight_today_desc">Show a distinct marker for today\'s dot</string>
 
+    <!-- GitHub Contributions -->
+    <string name="github_section">GitHub Contributions</string>
+    <string name="github_enable">Enable GitHub Heatmap</string>
+    <string name="github_enable_desc">Color dots by your GitHub contribution activity</string>
+    <string name="github_username">GitHub Username</string>
+    <string name="github_username_hint">e.g. torvalds</string>
+    <string name="github_connect">Connect</string>
+    <string name="github_disconnect">Disconnect</string>
+    <string name="github_connecting">Connecting…</string>
+    <string name="github_connected">Connected: %1$d contributions this year</string>
+    <string name="github_error">Could not fetch data. Check username.</string>
+    <string name="github_last_updated">Last updated: %1$s</string>
+
     <!-- Info -->
     <string name="days_passed">%1$d days passed</string>
     <string name="days_remaining">%1$d days remaining</string>

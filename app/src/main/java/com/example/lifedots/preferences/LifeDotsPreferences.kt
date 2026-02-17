@@ -189,6 +189,13 @@ enum class VisualTheme {
     COSMIC             // Space-themed
 }
 
+// GitHub Contribution Heatmap (Custom theme only)
+data class GitHubSettings(
+    val enabled: Boolean = false,
+    val username: String = "",
+    val refreshIntervalHours: Int = 6
+)
+
 data class WallpaperSettings(
     val theme: ThemeOption = ThemeOption.DARK,
     val dotSize: DotSize = DotSize.MEDIUM,
@@ -211,7 +218,8 @@ data class WallpaperSettings(
     val glassEffectSettings: GlassEffectSettings = GlassEffectSettings(),
     val treeEffectSettings: TreeEffectSettings = TreeEffectSettings(),
     val fluidEffectSettings: FluidEffectSettings = FluidEffectSettings(),
-    val visualTheme: VisualTheme = VisualTheme.CLASSIC
+    val visualTheme: VisualTheme = VisualTheme.CLASSIC,
+    val gitHubSettings: GitHubSettings = GitHubSettings()
 )
 
 class LifeDotsPreferences(context: Context) {
@@ -327,6 +335,13 @@ class LifeDotsPreferences(context: Context) {
 
         val visualTheme = VisualTheme.valueOf(prefs.getString(KEY_VISUAL_THEME, VisualTheme.CLASSIC.name) ?: VisualTheme.CLASSIC.name)
 
+        // GitHub Settings
+        val gitHubSettings = GitHubSettings(
+            enabled = prefs.getBoolean(KEY_GITHUB_ENABLED, false),
+            username = prefs.getString(KEY_GITHUB_USERNAME, "") ?: "",
+            refreshIntervalHours = prefs.getInt(KEY_GITHUB_REFRESH_INTERVAL, 6)
+        )
+
         return WallpaperSettings(
             theme = ThemeOption.valueOf(prefs.getString(KEY_THEME, ThemeOption.DARK.name) ?: ThemeOption.DARK.name),
             dotSize = DotSize.valueOf(prefs.getString(KEY_DOT_SIZE, DotSize.MEDIUM.name) ?: DotSize.MEDIUM.name),
@@ -347,7 +362,8 @@ class LifeDotsPreferences(context: Context) {
             glassEffectSettings = glassEffectSettings,
             treeEffectSettings = treeEffectSettings,
             fluidEffectSettings = fluidEffectSettings,
-            visualTheme = visualTheme
+            visualTheme = visualTheme,
+            gitHubSettings = gitHubSettings
         )
     }
 
@@ -754,6 +770,35 @@ class LifeDotsPreferences(context: Context) {
         notifyWallpaperChanged()
     }
 
+    // ===== GitHub Settings setters =====
+    fun setGitHubEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_GITHUB_ENABLED, enabled).apply()
+        val newGitHub = _settingsFlow.value.gitHubSettings.copy(enabled = enabled)
+        _settingsFlow.value = _settingsFlow.value.copy(gitHubSettings = newGitHub)
+        notifyWallpaperChanged()
+    }
+
+    fun setGitHubUsername(username: String) {
+        prefs.edit().putString(KEY_GITHUB_USERNAME, username).apply()
+        val newGitHub = _settingsFlow.value.gitHubSettings.copy(username = username)
+        _settingsFlow.value = _settingsFlow.value.copy(gitHubSettings = newGitHub)
+        notifyWallpaperChanged()
+    }
+
+    fun setGitHubRefreshInterval(hours: Int) {
+        prefs.edit().putInt(KEY_GITHUB_REFRESH_INTERVAL, hours).apply()
+        val newGitHub = _settingsFlow.value.gitHubSettings.copy(refreshIntervalHours = hours)
+        _settingsFlow.value = _settingsFlow.value.copy(gitHubSettings = newGitHub)
+        notifyWallpaperChanged()
+    }
+
+    /**
+     * Public wrapper to trigger wallpaper redraw (used by GitHubSyncWorker).
+     */
+    fun notifyWallpaperUpdate() {
+        notifyWallpaperChanged()
+    }
+
     private fun notifyWallpaperChanged() {
         wallpaperChangeListeners.forEach { it.invoke() }
     }
@@ -836,6 +881,11 @@ class LifeDotsPreferences(context: Context) {
 
         // Visual Theme key
         private const val KEY_VISUAL_THEME = "visual_theme"
+
+        // GitHub Settings keys
+        private const val KEY_GITHUB_ENABLED = "github_enabled"
+        private const val KEY_GITHUB_USERNAME = "github_username"
+        private const val KEY_GITHUB_REFRESH_INTERVAL = "github_refresh_interval"
 
         private val wallpaperChangeListeners = mutableListOf<() -> Unit>()
 

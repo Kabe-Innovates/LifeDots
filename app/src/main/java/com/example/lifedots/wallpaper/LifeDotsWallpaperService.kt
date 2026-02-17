@@ -48,7 +48,10 @@ import com.example.lifedots.preferences.TreeEffectSettings
 import com.example.lifedots.preferences.TreeStyle
 import com.example.lifedots.preferences.ViewMode
 import com.example.lifedots.preferences.WallpaperSettings
+import com.example.lifedots.github.GitHubContributionClient
 import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.pow
@@ -133,6 +136,22 @@ class LifeDotsWallpaperService : WallpaperService() {
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         )
+
+        // GitHub contribution data
+        private val gitHubClient by lazy { GitHubContributionClient(applicationContext) }
+        private var gitHubContributionMap: Map<String, Int>? = null
+        private var gitHubMapLastLoaded = 0L
+
+        // GitHub green palette (matches GitHub's contribution colors)
+        private val gitHubColors = intArrayOf(
+            Color.parseColor("#161b22"),  // level 0 - no contributions (dark bg)
+            Color.parseColor("#0e4429"),  // level 1
+            Color.parseColor("#006d32"),  // level 2
+            Color.parseColor("#26a641"),  // level 3
+            Color.parseColor("#39d353")   // level 4
+        )
+
+        private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
         private val settingsChangeListener: () -> Unit = {
             handler.post { draw() }
@@ -263,6 +282,9 @@ class LifeDotsWallpaperService : WallpaperService() {
             val dayOfYear = getCurrentDayOfYear()
             val totalDays = getTotalDaysInYear()
 
+            // Load GitHub contribution data if enabled (from cache, no network)
+            loadGitHubContributionMap(settings)
+
             // Calculate available height considering goals and footer
             val topOffset = calculateTopOffset(canvas.width, canvas.height, settings)
             val bottomOffset = calculateBottomOffset(canvas.width, canvas.height, settings)
@@ -372,7 +394,8 @@ class LifeDotsWallpaperService : WallpaperService() {
                         else -> DotType.EMPTY
                     }
 
-                    drawStyledDot(canvas, cx, cy, gridConfig.dotRadius, dotType, settings, colors)
+                    val gitHubColor = getGitHubDotColor(dotIndex + 1, settings)
+                    drawStyledDot(canvas, cx, cy, gridConfig.dotRadius, dotType, settings, colors, gitHubColor)
                     dotIndex++
                 }
                 if (dotIndex >= totalDays) break
@@ -469,7 +492,8 @@ class LifeDotsWallpaperService : WallpaperService() {
                             else -> DotType.EMPTY
                         }
 
-                        drawStyledDot(canvas, cx, cy, dotRadius, dotType, settings, colors)
+                        val gitHubColor = getGitHubDotColor(absoluteDay, settings)
+                        drawStyledDot(canvas, cx, cy, dotRadius, dotType, settings, colors, gitHubColor)
                         dayIndex++
                     }
                 }
@@ -565,7 +589,8 @@ class LifeDotsWallpaperService : WallpaperService() {
                             else -> DotType.EMPTY
                         }
 
-                        drawStyledDot(canvas, cx, cy, dotRadius, dotType, settings, colors)
+                        val gitHubColor = getGitHubDotColor(absoluteDay, settings)
+                        drawStyledDot(canvas, cx, cy, dotRadius, dotType, settings, colors, gitHubColor)
                         dayIndex++
                     }
                 }
@@ -583,9 +608,10 @@ class LifeDotsWallpaperService : WallpaperService() {
             radius: Float,
             dotType: DotType,
             settings: WallpaperSettings,
-            colors: ThemeColors
+            colors: ThemeColors,
+            gitHubColorOverride: Int? = null
         ) {
-            val baseColor = when (dotType) {
+            val baseColor = gitHubColorOverride ?: when (dotType) {
                 DotType.TODAY -> colors.todayDot
                 DotType.FILLED -> colors.filledDot
                 DotType.EMPTY -> colors.emptyDot
@@ -1853,6 +1879,58 @@ class LifeDotsWallpaperService : WallpaperService() {
                     todayDot = settings.customColors.todayDotColor
                 )
             }
+        }
+
+        // ===== GitHub Contribution Helpers =====
+
+        /**
+         * Load and cache the GitHub contribution map from SharedPreferences.
+         * This only does a SharedPreferences read, no network calls.
+         */
+        private fun loadGitHubContributionMap(settings: WallpaperSettings) {
+            if (!isGitHubEnabled(settings)) {
+                gitHubContributionMap = null
+                return
+            }
+
+            // Reload cache at most once per minute
+            val now = System.currentTimeMillis()
+            if (gitHubContributionMap != null && now - gitHubMapLastLoaded < 60_000) return
+
+            val data = gitHubClient.getCachedData()
+            gitHubContributionMap = data?.days?.associate { it.date to it.level }
+            gitHubMapLastLoaded = now
+        }
+
+        /**
+         * Check if GitHub coloring is active (Custom theme + GitHub enabled + username set).
+         */
+        private fun isGitHubEnabled(settings: WallpaperSettings): Boolean {
+            return settings.theme == ThemeOption.CUSTOM &&
+                    settings.gitHubSettings.enabled &&
+                    settings.gitHubSettings.username.isNotBlank()
+        }
+
+        /**
+         * Convert a day-of-year (1-365) to a date string "YYYY-MM-DD".
+         */
+        private fun dayOfYearToDateString(dayOfYear: Int): String {
+            val cal = Calendar.getInstance()
+            cal.set(Calendar.DAY_OF_YEAR, dayOfYear)
+            return dateFormatter.format(cal.time)
+        }
+
+        /**
+         * Get the GitHub contribution color for a specific day.
+         * Returns null if GitHub is not enabled or no data for that day.
+         */
+        private fun getGitHubDotColor(dayOfYear: Int, settings: WallpaperSettings): Int? {
+            val map = gitHubContributionMap ?: return null
+            if (!isGitHubEnabled(settings)) return null
+
+            val dateStr = dayOfYearToDateString(dayOfYear)
+            val level = map[dateStr] ?: return null
+            return gitHubColors[level.coerceIn(0, 4)]
         }
     }
 
